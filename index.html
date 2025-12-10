@@ -35,7 +35,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-
     body {
       box-sizing: border-box;
     }
@@ -442,7 +441,9 @@
  <body>
   <div style="width: 100%; background: #000000;">
    <header style="text-align: center; padding: 30px 20px; position: relative;">
-    <h1 class="logo-font" style="font-size: 48px; color: #fbbf24; letter-spacing: 6px; margin: 0; animation: neon-flicker 2s ease-in-out infinite;">LOSGOMEZ</h1>
+    <h1 class="logo-font" style="font-size: 48px; color: #fbbf24; letter-spacing: 6px; margin: 0; animation: neon-flicker 2s ease-in-out infinite;">LOSGOMEZ</h1><!-- 🚦 BANNER DE STATUS: Mostra se está aberto ou fechado -->
+    <div id="status-banner" style="margin-top: 20px; padding: 16px 24px; border-radius: 12px; display: inline-block; font-weight: 600; font-size: 16px;"><!-- Preenchido dinamicamente pelo JavaScript -->
+    </div>
    </header><button id="cart-btn" style="position: fixed; top: 120px; right: 20px; background: white; color: #dc2626; border: none; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); transition: all 0.3s; z-index: 200;"> 🛒 <span id="cart-count" class="cart-badge" style="display: none;">0</span> </button> <button id="whatsapp-contact-btn" style="position: fixed; top: 190px; right: 20px; background: #25D366; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); transition: all 0.3s; z-index: 200;" title="Fale Conosco - Ver disponibilidade de entrega"> 💬 </button>
    <main style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
     <section style="margin-bottom: 48px;">
@@ -702,8 +703,41 @@
       delivery_message: "DEUS SEJA LOUVADO"
     };
 
-    let cart = [];
+     let cart = [];
     let orderData = null;
+
+    // ⚙️ [HORÁRIO DE FUNCIONAMENTO] - Configure aqui os dias e horários
+    const WORKING_HOURS = {
+      days: [4, 5, 6], // 🗓️ Dias da semana: 0=Domingo, 1=Segunda, 2=Terça, 3=Quarta, 4=Quinta, 5=Sexta, 6=Sábado
+      startHour: 17,    // ⏰ Horário de abertura (17 = 17:00 / 5PM)
+      endHour: 22       // ⏰ Horário de fechamento (22 = 22:00 / 10PM)
+    };
+
+    // 🔍 Função que verifica se o restaurante está aberto agora
+    function isRestaurantOpen() {
+      const now = new Date();
+      const currentDay = now.getDay(); // Dia da semana atual (0-6)
+      const currentHour = now.getHours(); // Hora atual (0-23)
+      
+      // ✅ Verifica se hoje é um dia de funcionamento
+      const isWorkingDay = WORKING_HOURS.days.includes(currentDay);
+      
+      // ✅ Verifica se está dentro do horário de funcionamento
+      const isWorkingHour = currentHour >= WORKING_HOURS.startHour && currentHour < WORKING_HOURS.endHour;
+      
+      return isWorkingDay && isWorkingHour;
+    }
+
+    // 📅 Função que retorna o próximo dia/horário de funcionamento
+    function getNextOpeningInfo() {
+      const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+      const workingDayNames = WORKING_HOURS.days.map(d => dayNames[d]);
+      
+      return {
+        days: workingDayNames.join(', '),
+        hours: `${WORKING_HOURS.startHour}:00 às ${WORKING_HOURS.endHour}:00`
+      };
+    }
 
     async function onConfigChange(config) {
       const restaurantName = config.restaurant_name || defaultConfig.restaurant_name;
@@ -804,19 +838,13 @@
       });
     }
 
-    function updateItemCards() {
-      document.querySelectorAll('.item-card').forEach(card => {
-        const itemId = card.getAttribute('data-id');
-        const isInCart = cart.some(item => item.originalId === itemId || item.id === itemId);
-        if (isInCart) {
-          card.classList.add('selected');
-        } else {
-          card.classList.remove('selected');
-        }
-      });
-    }
-
     function addToCart(card, flavor = null) {
+      // 🚫 BLOQUEIO: Verifica se o restaurante está aberto antes de adicionar ao carrinho
+      if (!isRestaurantOpen()) {
+        showClosedMessage();
+        return; // ❌ Impede adicionar itens se estiver fechado
+      }
+
       const itemId = card.getAttribute('data-id');
       const itemName = card.getAttribute('data-name');
       const itemPrice = card.getAttribute('data-price');
@@ -856,6 +884,36 @@
       }, 2500);
     }
 
+     // 🚫 Exibe mensagem quando o restaurante está fechado
+    function showClosedMessage() {
+      const openingInfo = getNextOpeningInfo();
+      
+      const messageDiv = document.createElement('div');
+      messageDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 32px; border-radius: 16px; box-shadow: 0 10px 40px rgba(220, 38, 38, 0.5); z-index: 9999; text-align: center; max-width: 90%; width: 400px;';
+      messageDiv.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 16px;">🔒</div>
+        <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 12px;">Estamos Fechados</h3>
+        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 8px;">Desculpe, não estamos aceitando pedidos no momento.</p>
+        <div style="background: rgba(255, 255, 255, 0.2); padding: 16px; border-radius: 8px; margin-top: 16px;">
+          <p style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">📅 Dias de Funcionamento:</p>
+          <p style="font-size: 16px; font-weight: 700;">${openingInfo.days}</p>
+          <p style="font-size: 14px; font-weight: 600; margin-top: 12px; margin-bottom: 8px;">⏰ Horário:</p>
+          <p style="font-size: 16px; font-weight: 700;">${openingInfo.hours}</p>
+        </div>
+      `;
+      
+      document.body.appendChild(messageDiv);
+      
+      // Remove a mensagem após 4 segundos ou ao clicar
+      const removeMessage = () => {
+        messageDiv.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => messageDiv.remove(), 300);
+      };
+      
+      setTimeout(removeMessage, 4000);
+      messageDiv.addEventListener('click', removeMessage);
+    }
+
     const flavorModal = document.getElementById('flavor-modal');
     const burgerModal = document.getElementById('burger-modal');
     const juiceModal = document.getElementById('juice-modal');
@@ -864,6 +922,7 @@
     let selectedBurger = null;
     let selectedJuice = null;
 
+    // COMPATIBILIDADE MOBILE: Eventos otimizados para toque em botões de adicionar
     document.querySelectorAll('.add-item-btn').forEach(btn => {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -879,6 +938,24 @@
           burgerModal.style.display = 'flex';
         } else {
           addToCart(card);
+        }
+      });
+    });
+
+    document.querySelectorAll('.item-card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        if (!e.target.closest('.add-item-btn')) {
+          if (card.classList.contains('pastelao-card')) {
+            currentPastelaoCard = card;
+            flavorModal.style.display = 'flex';
+          } else if (card.classList.contains('combo-card')) {
+            currentComboCard = card;
+            selectedBurger = null;
+            selectedJuice = null;
+            burgerModal.style.display = 'flex';
+          } else {
+            addToCart(card);
+          }
         }
       });
     });
@@ -1002,6 +1079,13 @@
     });
 
     document.getElementById('continue-order').addEventListener('click', function() {
+      // 🚫 BLOQUEIO: Verifica se o restaurante está aberto antes de continuar
+      if (!isRestaurantOpen()) {
+        showClosedMessage();
+        document.getElementById('checkout-panel').classList.remove('active');
+        return; // ❌ Impede continuar se estiver fechado
+      }
+
       if (cart.length > 0) {
         document.getElementById('customer-form').style.display = 'block';
         document.getElementById('continue-order').style.display = 'none';
@@ -1011,6 +1095,12 @@
     });
 
     document.getElementById('finalize-order-btn').addEventListener('click', function() {
+      // 🚫 BLOQUEIO: Verifica se o restaurante está aberto antes de finalizar
+      if (!isRestaurantOpen()) {
+        showClosedMessage();
+        return; // ❌ Impede finalizar se estiver fechado
+      }
+
       document.getElementById('checkout-panel').classList.add('active');
       document.getElementById('customer-form').style.display = 'block';
       document.getElementById('continue-order').style.display = 'none';
@@ -1172,7 +1262,6 @@
     document.getElementById('confirm-payment-btn').addEventListener('click', function() {
       if (!orderData) return;
 
-
       const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
       const restaurantName = config.restaurant_name || defaultConfig.restaurant_name;
       const whatsappNumber = config.phone_number || defaultConfig.phone_number;
@@ -1281,6 +1370,37 @@
 
     onConfigChange(defaultConfig);
 
+    // 🚦 Atualiza o banner de status (aberto/fechado)
+    function updateStatusBanner() {
+      const statusBanner = document.getElementById('status-banner');
+      const openingInfo = getNextOpeningInfo();
+      
+      if (isRestaurantOpen()) {
+        // ✅ RESTAURANTE ABERTO
+        statusBanner.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        statusBanner.style.color = 'white';
+        statusBanner.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)';
+        statusBanner.innerHTML = `
+          <span style="font-size: 20px; margin-right: 8px;">🟢</span>
+          <strong>ABERTO AGORA!</strong>
+          <span style="display: block; font-size: 14px; margin-top: 4px; opacity: 0.9;">Fazendo pedidos até ${WORKING_HOURS.endHour}:00</span>
+        `;
+      } else {
+        // RESTAURANTE FECHADO
+        statusBanner.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+        statusBanner.style.color = 'white';
+        statusBanner.style.boxShadow = '0 4px 15px rgba(220, 38, 38, 0.4)';
+        statusBanner.innerHTML = `
+          <span style="font-size: 20px; margin-right: 8px;"></span>
+          <strong>FECHADO</strong>
+          <span style="display: block; font-size: 14px; margin-top: 4px; opacity: 0.9;">${openingInfo.days} • ${openingInfo.hours}</span>
+        `;
+      }
+    }
+// 🔄 Atualiza o status a cada minuto para manter sincronizado
+    updateStatusBanner();
+    setInterval(updateStatusBanner, 60000); // ⏱️ Verifica a cada 1 minuto (60000ms)
+
     window.addEventListener('load', function() {
       setTimeout(function() {
         const loadingScreen = document.getElementById('loading-screen');
@@ -1288,7 +1408,7 @@
         setTimeout(function() {
           loadingScreen.style.display = 'none';
         }, 500);
-      }, 1000); // ⏱️ TEMPO DE LOADING: 1 SEGUNDO (1000ms) - Ajustável aqui
+      }, 1000); // ⚙️ [AJUSTE: TEMPO DE TELA DE LOADING] ⏱️ TEMPO: 1 SEGUNDO (1000ms) - Modifique o número para mais ou menos tempo
     });
     
     // COMPATIBILIDADE MOBILE: Ajuste de layout ao mudar orientação
@@ -1299,6 +1419,53 @@
         window.scrollTo(0, 0);
       }, 100);
     });
+    
+    // COMPATIBILIDADE MOBILE: Prevenção de zoom duplo-toque em iOS (versão corrigida)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+    
+    // COMPATIBILIDADE iOS: Previne bounce scroll (versão corrigida)
+    document.addEventListener('touchmove', function(event) {
+      if (event.scale && event.scale !== 1) {
+        event.preventDefault();
+      }
+    }, false);
+    
+    // COMPATIBILIDADE MOBILE: Otimização de scroll em modais (versão simplificada)
+    const modals = document.querySelectorAll('[id$="-modal"]');
+    modals.forEach(modal => {
+      let startY;
+      modal.addEventListener('touchstart', function(e) {
+        if (e.touches && e.touches.length > 0) {
+          startY = e.touches[0].pageY;
+        }
+      });
+      
+      modal.addEventListener('touchmove', function(e) {
+        const modalContent = modal.querySelector('div');
+        if (!modalContent || !e.touches || e.touches.length === 0) return;
+        
+        const scrollTop = modalContent.scrollTop;
+        const scrollHeight = modalContent.scrollHeight;
+        const height = modalContent.clientHeight;
+        const deltaY = e.touches[0].pageY - startY;
+        
+        // COMPATIBILIDADE iOS: Previne scroll fora do modal
+        if ((scrollTop === 0 && deltaY > 0) || (scrollTop + height >= scrollHeight && deltaY < 0)) {
+          e.preventDefault();
+        }
+      });
+    });
+    
+    // COMPATIBILIDADE MOBILE: Log de inicialização bem-sucedida
+    console.log('✅ Cardápio LOSGOMEZ carregado com sucesso!');
+    console.log('📱 Compatível com Android e iOS');
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a88580e3268f61b',t:'MTc2NDgyMDI3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ac04284d47ff623',t:'MTc2NTQwNjU5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
