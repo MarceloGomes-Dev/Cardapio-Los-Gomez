@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="pt-BR">
+ <head>
+  <meta charset="UTF-8"><!-- COMPATIBILIDADE MOBILE: Viewport otimizado para Android e iOS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"><!-- COMPATIBILIDADE iOS: Suporte para iPhone X+ e notch -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><!-- COMPATIBILIDADE ANDROID: Cor da barra de status -->
+  <meta name="theme-color" content="#000000"><!-- COMPATIBILIDADE MOBILE: Prevenção de zoom em inputs -->
+  <meta name="format-detection" content="telephone=no">
+  <title>Cardápio Digital - LOSGOMEZ</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;700&family=Rubik+Mono+One&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #000000;
+      min-height: 100%;
+      /* COMPATIBILIDADE iOS: Padding seguro para notch do iPhone */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      /* COMPATIBILIDADE ANDROID: Suavização de fonte */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      /* COMPATIBILIDADE MOBILE: Desabilita seleção de texto em elementos interativos */
+      -webkit-tap-highlight-color: transparent;
+      /* COMPATIBILIDADE MOBILE: Previne zoom ao tocar em inputs */
+      touch-action: manipulation;
+    }
+    
+    .logo-font {
+      font-family: 'Rubik Mono One', monospace;
+    }
+    
+    /* COMPATIBILIDADE MOBILE: Cards otimizados para toque */
+    .item-card {
+      background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                  box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
+      /* COMPATIBILIDADE MOBILE: Área de toque mínima 44x44px (iOS) */
+      min-height: 44px;
+      /* COMPATIBILIDADE ANDROID/iOS: Feedback visual ao toque */
+      -webkit-tap-highlight-color: rgba(220, 38, 38, 0.2);
+      cursor: pointer;
+      /* 🚀 120Hz: Otimização máxima de performance */
+      will-change: transform, box-shadow, border-color;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      perspective: 1000px;
+      -webkit-perspective: 1000px;
+    }
+    
+    /* COMPATIBILIDADE MOBILE: Hover apenas em dispositivos com mouse */
+    @media (hover: hover) and (pointer: fine) {
+      .item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(220, 38, 38, 0.5);
+        border-color: #dc2626;
+      }
+    }
+    
+    /* COMPATIBILIDADE MOBILE: Estado ativo ao toque */
+    .item-card:active {
+      transform: scale(0.98);
+    }
+
+    .item-card.selected {
+      border-color: #dc2626;
+      background: linear-gradient(145deg, #2d1f1f 0%, #1f1111 100%);
+    }
+    
+    .item-image {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .item-image img.product-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+    
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    }
+    
+    .cart-badge {
+      background: #dc2626;
+      color: white;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    @keyframes slideDown {
+      from { 
+        opacity: 0;
+        transform: translate(-50%, -20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+      to { 
+        opacity: 0;
+        transform: translate(-50%, -20px);
+      }
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+    
+    @keyframes progress-load {
+      0% {
+        width: 0%;
+      }
+      100% {
+        width: 100%;
+      }
+    }
+    
+    @keyframes neon-flicker {
+      0%, 100% { 
+        text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24, 0 0 30px #fbbf24, 0 0 40px #dc2626, 0 0 70px #dc2626;
+      }
+      10%, 90% {
+        text-shadow: 0 0 5px #fbbf24, 0 0 10px #fbbf24, 0 0 15px #fbbf24, 0 0 20px #dc2626, 0 0 35px #dc2626;
+      }
+    }
+    
+    @keyframes burger-stack {
+      0% { transform: translateY(100px); opacity: 0; }
+      20% { transform: translateY(0); opacity: 1; }
+      80% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-100px); opacity: 0; }
+    }
+    
+    @keyframes float-up-down {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    @keyframes grid-move {
+      0% { background-position: 0 0; }
+      100% { background-position: 50px 50px; }
+    }
+    
+    @keyframes fade-in-out {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+    
+     /* COMPATIBILIDADE MOBILE: Painel de checkout otimizado para todos os dispositivos */
+    .checkout-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      max-height: 80%;
+      overflow-y: auto;
+      /* COMPATIBILIDADE iOS: Scroll suave */
+      -webkit-overflow-scrolling: touch;
+      /* COMPATIBILIDADE MOBILE: Aceleração por hardware */
+      -webkit-transform: translate3d(0, 100%, 0);
+      transform: translate3d(0, 100%, 0);
+      /* COMPATIBILIDADE iOS: Respeita área segura do iPhone */
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+     .checkout-panel.active {
+      transform: translateY(0);
+      /* COMPATIBILIDADE MOBILE: Aceleração por hardware */
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+    
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    /* COMPATIBILIDADE MOBILE: Botões de quantidade otimizados para toque */
+    .quantity-btn {
+      /* COMPATIBILIDADE iOS: Tamanho mínimo de toque 44x44px */
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #dc2626;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      transition: all 0.2s;
+      /* COMPATIBILIDADE MOBILE: Previne seleção de texto */
+      user-select: none;
+      -webkit-user-select: none;
+      /* COMPATIBILIDADE MOBILE: Aceleração por hardware */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+    
+    /* COMPATIBILIDADE MOBILE: Hover apenas para dispositivos com mouse */
+    @media (hover: hover) and (pointer: fine) {
+      .quantity-btn:hover {
+        background: #b91c1c;
+        transform: scale(1.1);
+      }
+    }
+
+     /* COMPATIBILIDADE MOBILE: Feedback tátil ao toque */
+    .quantity-btn:active {
+      background: #991b1b;
+      transform: scale(0.95);
+    }
+    
+    .category-title {
+      background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      display: inline-block;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    }
+    
+     /* COMPATIBILIDADE MOBILE: Botões principais otimizados para toque */
+    .btn-primary {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: white;
+      font-weight: 600;
+      /* COMPATIBILIDADE iOS: Altura mínima de toque 44px */
+      padding: 16px 32px;
+      min-height: 44px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+      /* COMPATIBILIDADE MOBILE: Previne seleção de texto */
+      user-select: none;
+      -webkit-user-select: none;
+      /* COMPATIBILIDADE MOBILE: Aceleração por hardware */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+    
+    /* COMPATIBILIDADE MOBILE: Hover apenas para mouse */
+    @media (hover: hover) and (pointer: fine) {
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+      }
+    }
+
+    /* COMPATIBILIDADE MOBILE: Feedback ao toque */
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+    
+    /* COMPATIBILIDADE MOBILE: Botões secundários otimizados */
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+      font-weight: 600;
+      padding: 12px 24px;
+      min-height: 44px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+     @media (hover: hover) and (pointer: fine) {
+      .btn-secondary:hover {
+        background: #4b5563;
+      }
+    }
+    
+    .btn-secondary:active {
+      background: #374151;
+      transform: scale(0.97);
+    }
+
+    /* COMPATIBILIDADE MOBILE: Inputs de formulário otimizados */
+    input, textarea, select {
+      /* COMPATIBILIDADE iOS: Previne zoom ao focar em inputs com fonte >= 16px */
+      font-size: 16px !important;
+      /* COMPATIBILIDADE MOBILE: Aparência nativa */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      /* COMPATIBILIDADE iOS: Bordas arredondadas personalizadas */
+      border-radius: 8px;
+    }
+
+    /* COMPATIBILIDADE MOBILE: Modais com scroll otimizado */
+    [id$="-modal"] {
+      /* COMPATIBILIDADE iOS: Scroll suave */
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* COMPATIBILIDADE MOBILE: Prevenção de bouncing em iOS */
+    body {
+      overscroll-behavior-y: none;
+    }
+
+    /* COMPATIBILIDADE MOBILE: Ajuste responsivo para telas pequenas */
+    @media (max-width: 50px) {
+      .logo-font {
+        /* COMPATIBILIDADE MOBILE: Título responsivo em telas pequenas */
+        font-size: clamp(28px, 8vw, 48px) !important;
+        letter-spacing: clamp(2px, 1vw, 6px) !important;
+      }
+      
+      .category-title {
+        /* COMPATIBILIDADE MOBILE: Categorias responsivas */
+        font-size: clamp(20px, 5vw, 28px) !important;
+        padding: 10px 16px !important;
+      }
+      
+      .item-card {
+        /* COMPATIBILIDADE MOBILE: Cards mais compactos em telas pequenas */
+        padding: 16px !important;
+      }
+      
+      .checkout-panel {
+        /* COMPATIBILIDADE MOBILE: Painel fullscreen em telas pequenas */
+        max-height: 90% !important;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body>
+  <div style="width: 100%; background: #000000;">
+   <header style="text-align: center; padding: 30px 20px; position: relative;">
+    <h1 class="logo-font" style="font-size: 48px; color: #fbbf24; letter-spacing: 6px; margin: 0; animation: neon-flicker 2s ease-in-out infinite;">LOSGOMEZ</h1>
+   </header><button id="cart-btn" style="position: fixed; top: 120px; right: 20px; background: white; color: #dc2626; border: none; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); transition: all 0.3s; z-index: 200;"> 🛒 <span id="cart-count" class="cart-badge" style="display: none;">0</span> </button> <button id="whatsapp-contact-btn" style="position: fixed; top: 190px; right: 20px; background: #25D366; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4); transition: all 0.3s; z-index: 200;" title="Fale Conosco - Ver disponibilidade de entrega"> 💬 </button>
+   <main style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+    <section style="margin-bottom: 48px;">
+     <h2 class="category-title" style="font-size: 28px; margin-bottom: 24px;">🍔 Hambúrgueres</h2>
+     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <div class="item-card" data-id="hamburger-classic" data-name="Hamburguer Classic" data-price="10.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/burg.png?raw=true" alt="Hamburguer Classic" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🍔';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Hamburguer Classic</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Pão brioche, carne artesanal, molho especial, cheddar, tomate e alface</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 10,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+      <div class="item-card" data-id="chicken-burger" data-name="Chicken Burguer" data-price="10.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/chicken.png?raw=true" alt="Chicken Burguer" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🍗';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Chicken Burguer</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Pão brioche, frango artesanal, molho especial, cheddar, tomate e alface</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 10,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section style="margin-bottom: 48px;">
+     <h2 class="category-title" style="font-size: 28px; margin-bottom: 24px;">🥙 Sanduíches &amp; Salgados</h2>
+     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <div class="item-card" data-id="pao-arabe" data-name="Pão Árabe" data-price="10.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/pao.png?raw=true" alt="Pão Árabe" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🥙';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Pão Árabe</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Pão Árabe, carne de hamburguer, frango desfiado, presunto e queijo ralado, tomate e alface</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 10,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+      <div class="item-card pastelao-card" data-id="pastelao" data-name="Pastelão" data-price="5.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/pasta.png?raw=true" alt="Pastelão" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🥟';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Pastelão</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Massa caseira, sabores de Carne, Misto, Queijo, Calabresa</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 5,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section style="margin-bottom: 48px;">
+     <h2 class="category-title" style="font-size: 28px; margin-bottom: 24px;">🍟 Porções</h2>
+     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <div class="item-card" data-id="batata-frita" data-name="Batata Frita porção" data-price="10.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/batata.png?raw=true" alt="Batata Frita" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🍟';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Batata Frita porção</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Deliciosa porção de batatas fritas crocantes</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 10,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+      <div class="item-card" data-id="coxinhas" data-name="Coxinhas porção" data-price="10.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/coxinha.png?raw=true" alt="Coxinhas" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🍗';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Coxinhas porção</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Porção de coxinhas de frango crocantes</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 10,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section style="margin-bottom: 48px;">
+     <h2 class="category-title" style="font-size: 28px; margin-bottom: 24px;">🎉 Combos</h2>
+     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <div class="item-card combo-card" data-id="combo-classic-1" data-name="Combo Classic 1" data-price="20.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 20px; background: linear-gradient(135deg, #374151 0%, #1f2937 100%);"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/burg.png?raw=true" alt="Burger" style="width: 85px; height: 85px; object-fit: contain; flex-shrink: 0;" onerror="this.outerHTML='<span style=&quot;font-size: 60px;&quot;>🍔</span>';"> <span style="font-size: 32px; color: #fbbf24; font-weight: bold; flex-shrink: 0;">+</span> <img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/batata.png?raw=true" alt="Batata" style="width: 85px; height: 85px; object-fit: contain; flex-shrink: 0;" onerror="this.outerHTML='<span style=&quot;font-size: 60px;&quot;>🍟</span>';"> <span style="font-size: 32px; color: #fbbf24; font-weight: bold; flex-shrink: 0;">+</span> <img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/marac.png?raw=true" alt="Suco" style="width: 85px; height: 85px; object-fit: contain; flex-shrink: 0;" onerror="this.outerHTML='<span style=&quot;font-size: 60px;&quot;>🥤</span>';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Combo Classic 1</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Pão brioche, carne/frango artesanal, molho especial, cheddar, tomate e alface + porção de batata + suco natural 250ml</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 20,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+      <div class="item-card combo-card" data-id="combo-classic-2" data-name="Combo Classic 2" data-price="25.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 20px; background: linear-gradient(135deg, #374151 0%, #1f2937 100%);"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/burg.png?raw=true" alt="Burger" style="width: 85px; height: 85px; object-fit: contain; flex-shrink: 0;" onerror="this.outerHTML='<span style=&quot;font-size: 60px;&quot;>🍔</span>';"> <span style="font-size: 32px; color: #fbbf24; font-weight: bold; flex-shrink: 0;">+</span> <img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/bataxinha.png?raw=true" alt="Coxinhas" style="width: 85px; height: 85px; object-fit: contain; flex-shrink: 0;" onerror="this.outerHTML='<span style=&quot;font-size: 60px;&quot;>🍗</span>';"> <span style="font-size: 32px; color: #fbbf24; font-weight: bold; flex-shrink: 0;">+</span> <img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/marac.png?raw=true" alt="Suco" style="width: 85px; height: 85px; object-fit: contain; flex-shrink: 0;" onerror="this.outerHTML='<span style=&quot;font-size: 60px;&quot;>🥤</span>';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Combo Classic 2</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Pão brioche, carne/frango artesanal, molho especial, cheddar, tomate e alface + porção de coxinhas + suco natural 250ml</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 25,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+      <div class="item-card" data-id="combo-bataxinha" data-name="Combo Bataxinha" data-price="15.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/bataxinha.png?raw=true" alt="Combo Bataxinha" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🍟🍗';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Combo Bataxinha</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Porção de batatas + coxinhas</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 15,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section style="margin-bottom: 48px;">
+     <h2 class="category-title" style="font-size: 28px; margin-bottom: 24px;">🥤 Bebidas</h2>
+     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+      <div class="item-card" data-id="suco-goiaba" data-name="Suco de Goiaba" data-price="3.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/goiaba2.png?raw=true" alt="Suco de Goiaba" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🥤';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Suco de Goiaba</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Suco natural de goiaba 250ml</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 3,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+      <div class="item-card" data-id="suco-maracuja" data-name="Suco de Maracujá" data-price="3.00" style="border-radius: 16px; padding: 20px; cursor: pointer; position: relative;">
+       <div class="item-image"><img src="https://github.com/MarceloGomes-Dev/LosGomes/blob/main/marac.png?raw=true" alt="Suco de Maracujá" class="product-img" onerror="this.style.display='none'; this.parentElement.innerHTML='🥤';">
+       </div>
+       <h3 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 16px 0 8px;">Suco de Maracujá</h3>
+       <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 12px;">Suco natural de maracujá 250ml</p>
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #dc2626;">R$ 3,00</span> <button class="add-item-btn" style="background: #dc2626; color: white; border: none; border-radius: 50%; width: 48px; height: 48px; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center;">+</button>
+       </div>
+      </div>
+     </div>
+    </section>
+    <section id="order-summary" style="margin-bottom: 48px; display: none;">
+     <h2 class="category-title" style="font-size: 28px; margin-bottom: 24px;">📋 Seu Pedido</h2>
+     <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+      <div id="order-items-list" style="margin-bottom: 20px;"></div>
+      <div style="border-top: 2px solid #e5e7eb; padding-top: 16px; margin-top: 16px;">
+       <div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 24px; font-weight: 700; color: #1f2937;">Total:</span> <span id="summary-total" style="font-size: 28px; font-weight: 700; color: #dc2626;">R$ 0,00</span>
+       </div>
+      </div><button id="finalize-order-btn" class="btn-primary" style="width: 100%; margin-top: 20px;"> Finalizar Pedido 🛒 </button>
+     </div>
+    </section>
+   </main>
+   <div id="loading-screen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000000; z-index: 10000; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 20px;">
+    <div style="position: absolute; width: 100%; height: 100%; background-image: linear-gradient(rgba(220, 38, 38, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(220, 38, 38, 0.1) 1px, transparent 1px); background-size: 50px 50px; animation: grid-move 20s linear infinite;"></div>
+    <div style="position: relative; z-index: 1; text-align: center; width: 100%; max-width: 500px;">
+     <h1 class="logo-font" style="font-size: clamp(32px, 10vw, 72px); color: #fbbf24; letter-spacing: clamp(2px, 1vw, 8px); margin-bottom: clamp(25px, 5%, 50px); animation: neon-flicker 2s ease-in-out infinite; line-height: 1.2;">LOSGOMEZ</h1>
+     <div style="position: relative; height: clamp(140px, 25%, 220px); margin: 0 auto clamp(20px, 4%, 40px); display: flex; flex-direction: column-reverse; align-items: center; justify-content: center;">
+      <div style="font-size: clamp(36px, 8vw, 60px); animation: burger-stack 3s ease-in-out infinite 0s;">
+       🍞
+      </div>
+      <div style="font-size: clamp(32px, 7vw, 48px); margin: clamp(-8px, -1%, -10px) 0; animation: burger-stack 3s ease-in-out infinite 0.3s;">
+       🥬
+      </div>
+      <div style="font-size: clamp(32px, 7vw, 48px); margin: clamp(-8px, -1%, -10px) 0; animation: burger-stack 3s ease-in-out infinite 0.6s;">
+       🍅
+      </div>
+      <div style="font-size: clamp(32px, 7vw, 48px); margin: clamp(-8px, -1%, -10px) 0; animation: burger-stack 3s ease-in-out infinite 0.9s;">
+       🧀
+      </div>
+      <div style="font-size: clamp(36px, 7.5vw, 54px); margin: clamp(-8px, -1%, -10px) 0; animation: burger-stack 3s ease-in-out infinite 1.2s;">
+       🥩
+      </div>
+      <div style="font-size: clamp(36px, 8vw, 60px); animation: burger-stack 3s ease-in-out infinite 1.5s;">
+       🍔
+      </div>
+     </div>
+     <p style="color: #ffffff; font-size: clamp(14px, 3.5vw, 22px); font-weight: 600; letter-spacing: clamp(1px, 0.3vw, 2px); margin-bottom: clamp(20px, 3%, 30px); padding: 0 15px;">MONTE SEU PEDIDO<span style="animation: fade-in-out 1.5s ease-in-out infinite;">...</span></p>
+     <div style="width: 100%; max-width: 350px; margin: 0 auto clamp(25px, 4%, 40px); padding: 0 20px;">
+      <div style="height: clamp(4px, 1%, 6px); background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden;">
+       <div style="height: 100%; background: linear-gradient(90deg, #fbbf24 0%, #dc2626 100%); border-radius: 10px; animation: progress-load 3s ease-out infinite; box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);"></div>
+      </div>
+     </div>
+     <div style="display: flex; gap: clamp(20px, 5vw, 35px); justify-content: center; padding: 0 20px;"><span style="font-size: clamp(28px, 7vw, 42px); animation: float-up-down 2s ease-in-out infinite 0s; filter: drop-shadow(0 4px 10px rgba(220, 38, 38, 0.5));">🍟</span> <span style="font-size: clamp(28px, 7vw, 42px); animation: float-up-down 2s ease-in-out infinite 0.4s; filter: drop-shadow(0 4px 10px rgba(220, 38, 38, 0.5));">🥤</span> <span style="font-size: clamp(28px, 7vw, 42px); animation: float-up-down 2s ease-in-out infinite 0.8s; filter: drop-shadow(0 4px 10px rgba(220, 38, 38, 0.5));">🍗</span>
+     </div>
+    </div>
+   </div>
+   <div id="flavor-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 2000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);">
+     <h3 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px; text-align: center;">🥟 Escolha o Sabor</h3>
+     <p style="color: #6b7280; text-align: center; margin-bottom: 24px;">Selecione o sabor do seu Pastelão</p>
+     <div id="flavor-options" style="display: grid; gap: 12px; margin-bottom: 24px;"><button class="flavor-option" data-flavor="Carne" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🥩 Carne</button> <button class="flavor-option" data-flavor="Misto" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🥞 Misto</button> <button class="flavor-option" data-flavor="Queijo" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🧀 Queijo</button> <button class="flavor-option" data-flavor="Calabresa" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🌶️ Calabresa</button>
+     </div><button id="close-flavor-modal" class="btn-secondary" style="width: 100%;">Cancelar</button>
+    </div>
+   </div>
+   <div id="burger-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 2000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);">
+     <h3 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px; text-align: center;">🍔 Escolha o Hambúrguer</h3>
+     <p style="color: #6b7280; text-align: center; margin-bottom: 24px;">Selecione o hambúrguer do seu combo</p>
+     <div style="display: grid; gap: 12px; margin-bottom: 24px;"><button class="burger-option" data-burger="Classic" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🍔 Hambúrguer Classic</button> <button class="burger-option" data-burger="Chicken" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🍗 Chicken Burguer</button>
+     </div><button id="close-burger-modal" class="btn-secondary" style="width: 100%;">Cancelar</button>
+    </div>
+   </div>
+   <div id="juice-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 2000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);">
+     <h3 style="font-size: 24px; font-weight: 700; color: #1f2937; margin-bottom: 8px; text-align: center;">🥤 Escolha o Sabor do Suco</h3>
+     <p style="color: #6b7280; text-align: center; margin-bottom: 24px;">Selecione o sabor do suco do seu combo</p>
+     <div style="display: grid; gap: 12px; margin-bottom: 24px;"><button class="juice-option" data-juice="Goiaba" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🥤 Goiaba</button> <button class="juice-option" data-juice="Maracujá" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937; text-align: left;">🥤 Maracujá</button>
+     </div><button id="close-juice-modal" class="btn-secondary" style="width: 100%;">Cancelar</button>
+    </div>
+   </div>
+   <div id="pix-payment-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); z-index: 3000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); margin: auto;">
+     <h3 style="font-size: 28px; font-weight: 700; color: #1f2937; margin-bottom: 8px; text-align: center;">💰 Pagamento PIX</h3>
+     <p style="color: #6b7280; text-align: center; margin-bottom: 24px; font-size: 14px;">Escaneie o QR Code ou copie a chave PIX</p>
+     <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 24px; border-radius: 16px; margin-bottom: 24px; text-align: center;">
+      <p style="color: white; font-size: 18px; font-weight: 700; margin-bottom: 8px;">Valor Total</p>
+      <p id="pix-total-amount" style="color: white; font-size: 36px; font-weight: 700;">R$ 0,00</p>
+     </div>
+     <div id="qr-code-container" style="background: white; padding: 20px; border-radius: 12px; border: 3px solid #10b981; margin-bottom: 20px; text-align: center;"><img id="pix-qr-code" src="" alt="QR Code PIX" style="width: 100%; max-width: 280px; height: auto; display: none; margin: 0 auto; display: block;" onerror="this.style.display='none'; document.getElementById('qr-code-error').style.display='block';">
+      <div id="qr-code-error" style="display: none; padding: 40px 20px; color: #6b7280;">
+       <p style="font-size: 48px; margin-bottom: 12px;"></p>
+       <p style="font-size: 14px;">QR Code não disponível</p>
+      </div>
+     </div>
+     <div style="background: #f3f4f6; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+      <p style="color: #6b7280; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-align: center;">CHAVE PIX</p>
+      <div style="display: flex; align-items: center; gap: 8px;"><input type="text" id="pix-key-display" readonly style="flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: monospace; background: white;"> <button id="copy-pix-key" style="background: #10b981; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;"> 📋 </button>
+      </div>
+     </div>
+     <div style="background: #fef3c7; border: 2px solid #fbbf24; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+      <p style="color: #92400e; font-size: 13px; line-height: 1.6; text-align: center;">⚠️ <strong>Importante:</strong> Após realizar o pagamento, clique em "Confirmar Pagamento" e envie o comprovante pelo WhatsApp</p>
+     </div><button id="confirm-payment-btn" class="btn-primary" style="width: 100%; margin-bottom: 12px;"> ✅ Confirmar Pagamento </button> <button id="cancel-payment-btn" class="btn-secondary" style="width: 100%;"> Cancelar </button>
+    </div>
+   </div>
+   <div id="checkout-panel" class="checkout-panel">
+    <div style="padding: 24px;">
+     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <h2 style="font-size: 28px; font-weight: 700; color: #1f2937;">🛒 Seu Pedido</h2><button id="close-panel" class="btn-secondary">✕</button>
+     </div>
+     <div id="cart-items" style="margin-bottom: 24px; max-height: 300px; overflow-y: auto;"></div>
+     <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; font-size: 24px; font-weight: 700; color: #1f2937;"><span>Total:</span> <span style="color: #dc2626;" id="total-price">R$ 0,00</span>
+      </div>
+     </div>
+     <div id="customer-form" style="display: none;">
+      <h3 style="font-size: 20px; font-weight: 600; color: #1f2937; margin-bottom: 16px;">Dados do Pedido</h3>
+      <div style="margin-bottom: 16px;"><label for="customer-name" style="display: block; color: #4b5563; font-weight: 600; margin-bottom: 8px;">👤 Nome:</label> <input type="text" id="customer-name" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;" placeholder="Seu nome completo">
+      </div>
+      <div style="margin-bottom: 16px;"><label for="customer-phone" style="display: block; color: #4b5563; font-weight: 600; margin-bottom: 8px;">📱 Telefone: <span style="color: #dc2626;">*</span></label> <input type="tel" id="customer-phone" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;" placeholder="(00) 00000-0000">
+      </div>
+      <div style="margin-bottom: 16px;"><label for="order-notes" style="display: block; color: #4b5563; font-weight: 600; margin-bottom: 8px;">📝 Observações:</label> <textarea id="order-notes" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; resize: vertical;" placeholder="Ex: Sem verduras, sem cebola, etc."></textarea>
+      </div>
+      <div style="margin-bottom: 16px;"><label style="display: block; color: #4b5563; font-weight: 600; margin-bottom: 12px;">🚚 Deseja Entrega? (Taxa fixa: R$ 7,00) Entrega disponível para as proximidades do Bairro Jardim Guanabara e adjacências. Caso contrário verifique as disponibilidades para entrega. Obrigado!</label>
+       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;"><button id="delivery-yes" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937;">Sim</button> <button id="delivery-no" style="background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; font-size: 16px; font-weight: 600; color: #1f2937;">Não</button>
+       </div>
+      </div>
+      <div id="delivery-address-section" style="display: none; margin-bottom: 16px;">
+       <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+        <p style="color: #065f46; font-weight: 600; font-size: 14px; text-align: center;">💵 Taxa de Entrega: R$ 7,00 💵</p>
+       </div>
+       <h4 style="font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 12px;">📍 Endereço de Entrega</h4>
+       <div style="margin-bottom: 12px;"><label for="delivery-street" style="display: block; color: #4b5563; font-weight: 600; margin-bottom: 8px;">Rua/Avenida e Número:</label> <input type="text" id="delivery-street" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;" placeholder="Ex: Rua das Flores, 123">
+       </div>
+       <div style="margin-bottom: 12px;"><label for="delivery-neighborhood" style="display: block; color: #4b5563; font-weight: 600; margin-bottom: 8px;">Bairro:</label> <input type="text" id="delivery-neighborhood" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;" placeholder="Nome do bairro">
+       </div>
+       <div style="margin-bottom: 12px;"><label for="delivery-complement" style="display: block; color: #4b5563; font-weight: 600; margin-bottom: 8px;">Complemento (opcional):</label> <input type="text" id="delivery-complement" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px;" placeholder="Apto, bloco, etc.">
+       </div>
+      </div><button id="send-order" class="btn-primary" style="width: 100%; margin-top: 16px;">Finalizar Pedido 💰</button>
+     </div><button id="continue-order" class="btn-primary" style="width: 100%;">Continuar Pedido</button>
+    </div>
+   </div>
+   <footer style="background: #1f2937; color: white; padding: 24px; text-align: center; margin-top: 60px;">
+    <p style="font-size: 14px;">© 2025 <span id="footer-name" class="logo-font" style="color: #fbbf24; font-size: 20px;">LOSGOMEZ</span> - Todos os direitos reservados</p>
+    <p style="font-size: 12px; color: #9ca3af; margin-top: 8px;" id="delivery-info">DEUS SEJA LOUVADO</p>
+   </footer>
+  </div>
+  <script>
+    const defaultConfig = {
+      restaurant_name: "LOSGOMEZ",
+      phone_number: "5585999608799",
+      pix_key: "marceloag57@gmail.com",
+      qr_code_url: "https://github.com/MarceloGomes-Dev/LosGomes/blob/main/pix.jpg?raw=true",
+      delivery_message: "DEUS SEJA LOUVADO"
+    };
+
+    let cart = [];
+    let orderData = null;
+
+    async function onConfigChange(config) {
+      const restaurantName = config.restaurant_name || defaultConfig.restaurant_name;
+      const deliveryMessage = config.delivery_message || defaultConfig.delivery_message;
+      document.getElementById('footer-name').textContent = restaurantName;
+      document.getElementById('delivery-info').textContent = deliveryMessage;
+    }
+
+    function updateCartDisplay() {
+      const cartCount = document.getElementById('cart-count');
+      const cartItemsContainer = document.getElementById('cart-items');
+      const totalPrice = document.getElementById('total-price');
+      const orderSummary = document.getElementById('order-summary');
+      const orderItemsList = document.getElementById('order-items-list');
+      const summaryTotal = document.getElementById('summary-total');
+      
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      
+      if (totalItems > 0) {
+        cartCount.style.display = 'flex';
+        cartCount.textContent = totalItems;
+      } else {
+        cartCount.style.display = 'none';
+      }
+
+      if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<p style="text-align: center; color: #9ca3af; padding: 40px;">Seu carrinho está vazio</p>';
+        document.getElementById('customer-form').style.display = 'none';
+        document.getElementById('continue-order').style.display = 'block';
+        orderSummary.style.display = 'none';
+      } else {
+        orderSummary.style.display = 'block';
+        
+        cartItemsContainer.innerHTML = cart.map(item => `
+          <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+              <div style="flex: 1;">
+                <h4 style="font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">${item.name}</h4>
+                <p style="font-size: 16px; color: #dc2626; font-weight: 600;">R$ ${item.price}</p>
+              </div>
+              <button class="remove-item" data-id="${item.id}" style="background: #ef4444; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">×</button>
+            </div>
+            <div class="quantity-controls">
+              <button class="quantity-btn decrease-qty" data-id="${item.id}">−</button>
+              <span style="font-size: 18px; font-weight: 600; min-width: 40px; text-align: center;">${item.quantity}</span>
+              <button class="quantity-btn increase-qty" data-id="${item.id}">+</button>
+              <span style="margin-left: auto; font-size: 18px; font-weight: 700; color: #1f2937;">R$ ${(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
+            </div>
+          </div>
+        `).join('');
+
+        orderItemsList.innerHTML = cart.map(item => `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+            <div style="flex: 1;">
+              <h4 style="font-size: 16px; font-weight: 600; color: #1f2937;">${item.name}</h4>
+              <p style="font-size: 14px; color: #6b7280;">Qtd: ${item.quantity}x | R$ ${item.price}</p>
+            </div>
+            <span style="font-size: 18px; font-weight: 700; color: #dc2626;">R$ ${(parseFloat(item.price) * item.quantity).toFixed(2)}</span>
+          </div>
+        `).join('');
+      }
+
+      const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const total = subtotal + deliveryFee;
+      
+      totalPrice.textContent = `R$ ${total.toFixed(2)}`;
+      summaryTotal.textContent = `R$ ${total.toFixed(2)}`;
+
+      document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const itemId = this.getAttribute('data-id');
+          cart = cart.filter(item => item.id !== itemId);
+          updateCartDisplay();
+          updateItemCards();
+        });
+      });
+
+      document.querySelectorAll('.decrease-qty').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const itemId = this.getAttribute('data-id');
+          const item = cart.find(i => i.id === itemId);
+          if (item && item.quantity > 1) {
+            item.quantity--;
+            updateCartDisplay();
+          }
+        });
+      });
+
+      document.querySelectorAll('.increase-qty').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const itemId = this.getAttribute('data-id');
+          const item = cart.find(i => i.id === itemId);
+          if (item) {
+            item.quantity++;
+            updateCartDisplay();
+          }
+        });
+      });
+    }
+
+    function updateItemCards() {
+      document.querySelectorAll('.item-card').forEach(card => {
+        const itemId = card.getAttribute('data-id');
+        const isInCart = cart.some(item => item.originalId === itemId || item.id === itemId);
+        if (isInCart) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+      });
+    }
+
+    function addToCart(card, flavor = null) {
+      const itemId = card.getAttribute('data-id');
+      const itemName = card.getAttribute('data-name');
+      const itemPrice = card.getAttribute('data-price');
+
+      let fullItemName = itemName;
+      let uniqueId = itemId;
+      
+      if (flavor) {
+        fullItemName = `${itemName} (${flavor})`;
+        uniqueId = `${itemId}-${flavor}`;
+      }
+
+      const existingItem = cart.find(item => item.id === uniqueId);
+      
+      if (existingItem) {
+        existingItem.quantity++;
+      } else {
+        cart.push({
+          id: uniqueId,
+          name: fullItemName,
+          price: itemPrice,
+          quantity: 1,
+          originalId: itemId
+        });
+      }
+
+      updateCartDisplay();
+      updateItemCards();
+      
+      const notification = document.createElement('div');
+      notification.style.cssText = 'position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 20px 32px; border-radius: 12px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); z-index: 9999; font-weight: 600; font-size: 16px; animation: slideDown 0.3s ease;';
+      notification.innerHTML = `✅ <strong>${fullItemName}</strong> foi adicionado ao carrinho!`;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        notification.style.animation = 'slideUp 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 2500);
+    }
+
+    const flavorModal = document.getElementById('flavor-modal');
+    const burgerModal = document.getElementById('burger-modal');
+    const juiceModal = document.getElementById('juice-modal');
+    let currentPastelaoCard = null;
+    let currentComboCard = null;
+    let selectedBurger = null;
+    let selectedJuice = null;
+
+    document.querySelectorAll('.add-item-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const card = this.closest('.item-card');
+        
+        if (card.classList.contains('pastelao-card')) {
+          currentPastelaoCard = card;
+          flavorModal.style.display = 'flex';
+        } else if (card.classList.contains('combo-card')) {
+          currentComboCard = card;
+          selectedBurger = null;
+          selectedJuice = null;
+          burgerModal.style.display = 'flex';
+        } else {
+          addToCart(card);
+        }
+      });
+    });
+
+    document.querySelectorAll('.item-card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        if (!e.target.closest('.add-item-btn')) {
+          if (card.classList.contains('pastelao-card')) {
+            currentPastelaoCard = card;
+            flavorModal.style.display = 'flex';
+          } else if (card.classList.contains('combo-card')) {
+            currentComboCard = card;
+            selectedBurger = null;
+            selectedJuice = null;
+            burgerModal.style.display = 'flex';
+          } else {
+            addToCart(card);
+          }
+        }
+      });
+    });
+
+    document.querySelectorAll('.flavor-option').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const flavor = this.getAttribute('data-flavor');
+        if (currentPastelaoCard) {
+          addToCart(currentPastelaoCard, flavor);
+          flavorModal.style.display = 'none';
+          currentPastelaoCard = null;
+        }
+      });
+      
+      btn.addEventListener('mouseenter', function() {
+        this.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+        this.style.color = 'white';
+        this.style.borderColor = '#dc2626';
+      });
+      
+      btn.addEventListener('mouseleave', function() {
+        this.style.background = 'linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%)';
+        this.style.color = '#1f2937';
+        this.style.borderColor = '#e5e7eb';
+      });
+    });
+
+    document.getElementById('close-flavor-modal').addEventListener('click', function() {
+      flavorModal.style.display = 'none';
+      currentPastelaoCard = null;
+    });
+
+    document.querySelectorAll('.burger-option').forEach(btn => {
+      btn.addEventListener('click', function() {
+        selectedBurger = this.getAttribute('data-burger');
+        burgerModal.style.display = 'none';
+        juiceModal.style.display = 'flex';
+      });
+      
+      btn.addEventListener('mouseenter', function() {
+        this.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+        this.style.color = 'white';
+        this.style.borderColor = '#dc2626';
+      });
+      
+      btn.addEventListener('mouseleave', function() {
+        this.style.background = 'linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%)';
+        this.style.color = '#1f2937';
+        this.style.borderColor = '#e5e7eb';
+      });
+    });
+
+    document.getElementById('close-burger-modal').addEventListener('click', function() {
+      burgerModal.style.display = 'none';
+      currentComboCard = null;
+      selectedBurger = null;
+      selectedJuice = null;
+    });
+
+    document.querySelectorAll('.juice-option').forEach(btn => {
+      btn.addEventListener('click', function() {
+        selectedJuice = this.getAttribute('data-juice');
+        if (currentComboCard) {
+          const comboFlavor = `${selectedBurger} + Suco de ${selectedJuice}`;
+          addToCart(currentComboCard, comboFlavor);
+          juiceModal.style.display = 'none';
+          currentComboCard = null;
+          selectedBurger = null;
+          selectedJuice = null;
+        }
+      });
+      
+      btn.addEventListener('mouseenter', function() {
+        this.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+        this.style.color = 'white';
+        this.style.borderColor = '#dc2626';
+      });
+      
+      btn.addEventListener('mouseleave', function() {
+        this.style.background = 'linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%)';
+        this.style.color = '#1f2937';
+        this.style.borderColor = '#e5e7eb';
+      });
+    });
+
+    document.getElementById('close-juice-modal').addEventListener('click', function() {
+      juiceModal.style.display = 'none';
+      if (selectedBurger) {
+        burgerModal.style.display = 'flex';
+      } else {
+        currentComboCard = null;
+        selectedBurger = null;
+        selectedJuice = null;
+      }
+    });
+
+    document.getElementById('cart-btn').addEventListener('click', function() {
+      document.getElementById('checkout-panel').classList.add('active');
+    });
+
+    document.getElementById('close-panel').addEventListener('click', function() {
+      document.getElementById('checkout-panel').classList.remove('active');
+    });
+
+    document.getElementById('continue-order').addEventListener('click', function() {
+      if (cart.length > 0) {
+        document.getElementById('customer-form').style.display = 'block';
+        document.getElementById('continue-order').style.display = 'none';
+      } else {
+        document.getElementById('checkout-panel').classList.remove('active');
+      }
+    });
+
+    document.getElementById('finalize-order-btn').addEventListener('click', function() {
+      document.getElementById('checkout-panel').classList.add('active');
+      document.getElementById('customer-form').style.display = 'block';
+      document.getElementById('continue-order').style.display = 'none';
+    });
+
+    let deliveryFee = 0;
+    let needsDelivery = null;
+    const FIXED_DELIVERY_FEE = 7.00;
+
+    document.getElementById('delivery-yes').addEventListener('click', function() {
+      needsDelivery = true;
+      deliveryFee = FIXED_DELIVERY_FEE;
+      this.style.background = 'linear-gradient(145deg, #10b981 0%, #059669 100%)';
+      this.style.borderColor = 'transparent';
+      document.getElementById('delivery-no').style.background = 'linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%)';
+      document.getElementById('delivery-no').style.borderColor = '#e5e7eb';
+      document.getElementById('delivery-address-section').style.display = 'block';
+      updateCartDisplay();
+    });
+
+    document.getElementById('delivery-no').addEventListener('click', function() {
+      needsDelivery = false;
+      deliveryFee = 0;
+      this.style.background = 'linear-gradient(145deg, #10b981 0%, #059669 100%)';
+      this.style.borderColor = 'transparent';
+      document.getElementById('delivery-yes').style.background = 'linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%)';
+      document.getElementById('delivery-yes').style.borderColor = '#e5e7eb';
+      document.getElementById('delivery-address-section').style.display = 'none';
+      updateCartDisplay();
+    });
+
+    document.getElementById('send-order').addEventListener('click', function() {
+      const name = document.getElementById('customer-name').value.trim();
+      const phone = document.getElementById('customer-phone').value.trim();
+
+      if (!phone) {
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; font-weight: 600;';
+        messageDiv.textContent = '⚠️ Por favor, preencha o número de telefone!';
+        document.body.appendChild(messageDiv);
+        setTimeout(() => messageDiv.remove(), 3000);
+        return;
+      }
+
+      if (!name) {
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; font-weight: 600;';
+        messageDiv.textContent = '⚠️ Por favor, preencha o nome!';
+        document.body.appendChild(messageDiv);
+        setTimeout(() => messageDiv.remove(), 3000);
+        return;
+      }
+
+      if (needsDelivery === null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; font-weight: 600;';
+        messageDiv.textContent = '⚠️ Por favor, selecione se deseja entrega!';
+        document.body.appendChild(messageDiv);
+        setTimeout(() => messageDiv.remove(), 3000);
+        return;
+      }
+
+      if (needsDelivery) {
+        const street = document.getElementById('delivery-street').value.trim();
+        const neighborhood = document.getElementById('delivery-neighborhood').value.trim();
+        
+        if (!street || !neighborhood) {
+          const messageDiv = document.createElement('div');
+          messageDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; font-weight: 600;';
+          messageDiv.textContent = '⚠️ Preencha todos os dados de entrega!';
+          document.body.appendChild(messageDiv);
+          setTimeout(() => messageDiv.remove(), 3000);
+          return;
+        }
+      }
+
+      const notes = document.getElementById('order-notes').value.trim();
+
+      orderData = {
+        name,
+        phone,
+        notes,
+        needsDelivery,
+        street: needsDelivery ? document.getElementById('delivery-street').value.trim() : '',
+        neighborhood: needsDelivery ? document.getElementById('delivery-neighborhood').value.trim() : '',
+        complement: needsDelivery ? document.getElementById('delivery-complement').value.trim() : ''
+      };
+
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const pixKey = config.pix_key || defaultConfig.pix_key;
+      const qrCodeUrl = config.qr_code_url || defaultConfig.qr_code_url;
+
+      if (!pixKey) {
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #dc2626; color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; font-weight: 600;';
+        messageDiv.textContent = '⚠️ Chave PIX não configurada! Configure nas opções de edição.';
+        document.body.appendChild(messageDiv);
+        setTimeout(() => messageDiv.remove(), 3000);
+        return;
+      }
+
+      const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const total = subtotal + deliveryFee;
+
+      document.getElementById('pix-total-amount').textContent = `R$ ${total.toFixed(2)}`;
+      document.getElementById('pix-key-display').value = pixKey;
+
+      const qrCodeImg = document.getElementById('pix-qr-code');
+      if (qrCodeUrl) {
+        qrCodeImg.src = qrCodeUrl;
+        qrCodeImg.style.display = 'block';
+        document.getElementById('qr-code-error').style.display = 'none';
+      } else {
+        qrCodeImg.style.display = 'none';
+        document.getElementById('qr-code-error').style.display = 'block';
+      }
+
+      document.getElementById('checkout-panel').classList.remove('active');
+      document.getElementById('pix-payment-modal').style.display = 'flex';
+    });
+
+    document.getElementById('copy-pix-key').addEventListener('click', function() {
+      const pixKeyInput = document.getElementById('pix-key-display');
+      pixKeyInput.select();
+      document.execCommand('copy');
+      
+      const originalText = this.textContent;
+      this.textContent = '✅';
+      this.style.background = '#059669';
+      
+      setTimeout(() => {
+        this.textContent = originalText;
+        this.style.background = '#10b981';
+      }, 2000);
+
+      const messageDiv = document.createElement('div');
+      messageDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 24px; border-radius: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); z-index: 9999; font-weight: 600;';
+      messageDiv.textContent = '✅ Chave PIX copiada!';
+      document.body.appendChild(messageDiv);
+      setTimeout(() => messageDiv.remove(), 2000);
+    });
+
+    document.getElementById('cancel-payment-btn').addEventListener('click', function() {
+      document.getElementById('pix-payment-modal').style.display = 'none';
+      document.getElementById('checkout-panel').classList.add('active');
+      orderData = null;
+    });
+
+    document.getElementById('whatsapp-contact-btn').addEventListener('click', function() {
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const restaurantName = config.restaurant_name || defaultConfig.restaurant_name;
+      const whatsappNumber = config.phone_number || defaultConfig.phone_number;
+      
+      const message = `Olá ${restaurantName}! 👋\n\nGostaria de verificar a disponibilidade de entrega no meu endereço.\n\nPoderia me ajudar?`;
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    });
+
+    document.getElementById('confirm-payment-btn').addEventListener('click', function() {
+      if (!orderData) return;
+
+
+      const config = window.elementSdk ? window.elementSdk.config : defaultConfig;
+      const restaurantName = config.restaurant_name || defaultConfig.restaurant_name;
+      const whatsappNumber = config.phone_number || defaultConfig.phone_number;
+
+      let message = `PEDIDO - ${restaurantName}\n\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `DADOS DO CLIENTE\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `Nome: ${orderData.name}\n`;
+      message += `Telefone: ${orderData.phone}\n`;
+      
+      if (orderData.needsDelivery) {
+        message += `\nENTREGA\n`;
+        message += `Endereço: ${orderData.street}\n`;
+        message += `Bairro: ${orderData.neighborhood}\n`;
+        if (orderData.complement) message += `Complemento: ${orderData.complement}\n`;
+      } else {
+        message += `\nRETIRADA NO LOCAL\n`;
+      }
+      
+      message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `ITENS DO PEDIDO\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+
+      cart.forEach(item => {
+        const itemTotal = (parseFloat(item.price) * item.quantity).toFixed(2);
+        message += `\n${item.name}\n`;
+        message += `   Qtd: ${item.quantity}x | R$ ${item.price}\n`;
+        message += `   Subtotal: R$ ${itemTotal}\n`;
+      });
+
+      const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+      const total = subtotal + deliveryFee;
+      
+      message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `VALORES\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `Subtotal: R$ ${subtotal.toFixed(2)}\n`;
+      if (orderData.needsDelivery) {
+        message += `Taxa de Entrega: R$ ${deliveryFee.toFixed(2)}\n`;
+      }
+      message += `*TOTAL: R$ ${total.toFixed(2)}*\n`;
+      
+      message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `PAGAMENTO PIX\n`;
+      message += `━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `Pagamento Confirmado\n`;
+      message += `Valor Pago: R$ ${total.toFixed(2)}\n`;
+      
+      if (orderData.notes) {
+        message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+        message += `OBSERVAÇÕES\n`;
+        message += `━━━━━━━━━━━━━━━━━━━━\n`;
+        message += `${orderData.notes}\n`;
+      }
+      
+      message += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+      message += `*ENVIE O COMPROVANTE DE PAGAMENTO*\n`;
+      message += `Obrigado pela preferência!`;
+
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+
+      document.getElementById('pix-payment-modal').style.display = 'none';
+      
+      cart = [];
+      updateCartDisplay();
+      updateItemCards();
+      document.getElementById('customer-name').value = '';
+      document.getElementById('customer-phone').value = '';
+      document.getElementById('order-notes').value = '';
+      document.getElementById('delivery-street').value = '';
+      document.getElementById('delivery-neighborhood').value = '';
+      document.getElementById('delivery-complement').value = '';
+      needsDelivery = null;
+      deliveryFee = 0;
+      orderData = null;
+      document.getElementById('delivery-address-section').style.display = 'none';
+      
+      const successDiv = document.createElement('div');
+      successDiv.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 32px 48px; border-radius: 16px; box-shadow: 0 10px 40px rgba(16, 185, 129, 0.5); z-index: 9999; font-weight: 600; text-align: center; font-size: 18px;';
+      successDiv.innerHTML = '<br><strong>Pedido Enviado!</strong><br><span style="font-size: 14px;">Envie o comprovante pelo WhatsApp</span>';
+      document.body.appendChild(successDiv);
+      setTimeout(() => successDiv.remove(), 3000);
+    });
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["restaurant_name", config.restaurant_name || defaultConfig.restaurant_name],
+          ["phone_number", config.phone_number || defaultConfig.phone_number],
+          ["pix_key", config.pix_key || defaultConfig.pix_key],
+          ["qr_code_url", config.qr_code_url || defaultConfig.qr_code_url],
+          ["delivery_message", config.delivery_message || defaultConfig.delivery_message]
+        ])
+      });
+    }
+
+    onConfigChange(defaultConfig);
+
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        loadingScreen.style.animation = 'fadeOut 0.5s ease';
+        setTimeout(function() {
+          loadingScreen.style.display = 'none';
+        }, 500);
+      }, 1000); // ⏱️ TEMPO DE LOADING: 1 SEGUNDO (1000ms) - Ajustável aqui
+    });
+    
+    // COMPATIBILIDADE MOBILE: Ajuste de layout ao mudar orientação
+    window.addEventListener('orientationchange', function() {
+      // COMPATIBILIDADE iOS/Android: Recalcula altura ao rotacionar
+      setTimeout(function() {
+        window.scrollTo(0, 1);
+        window.scrollTo(0, 0);
+      }, 100);
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a88580e3268f61b',t:'MTc2NDgyMDI3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
